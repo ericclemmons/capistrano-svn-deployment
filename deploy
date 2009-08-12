@@ -1,0 +1,40 @@
+#!/usr/bin/python
+import os, sys, logging
+from deployment import Deployment
+
+d = Deployment()
+
+d.repositories  = ["svn+ssh://repo/path"]
+
+d.mail_to       = "my@email.com"
+
+d.tmp_folder    = "%s/tmp" % os.path.expanduser("~")
+d.log_folder    = "%s/logs" % os.path.expanduser("~")
+
+d.servers   =   { "stage":      ["stage1"],
+                  "tests":      ["testing1"],
+                  "production": ["prod1"] }
+
+# If verbose is enabled, send DEBUG comments to screen
+level   =   logging.DEBUG if d.options.verbose else logging.INFO
+format  =   '%(asctime)s %(levelname)-8s %(message)s'
+datefmt =   '%m-%d %H:%M'
+
+logging.basicConfig(level   =   level,
+                  format  =   format,
+                  datefmt =   datefmt,)
+
+# Set file name to be LOG_FOLDER/REV
+log_filename = "%s.log" % d.get_log_filename()
+formatter = logging.Formatter(format, datefmt)
+
+# Initialize logging to file system
+file_logger = logging.FileHandler(log_filename)
+file_logger.setLevel(logging.DEBUG)
+file_logger.setFormatter(formatter)
+
+logging.getLogger('').addHandler(file_logger)
+
+d.start()
+
+exit()
